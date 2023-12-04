@@ -22,10 +22,16 @@ const userSchema = new mongoose.Schema({
   location: {
     type: String,
   },
+  otp: { type: Number, default: null },
+  otpExpiry: { type: Date, default: null },
   role: {
     type: String,
     enum: ["admin", "user"],
     default: "user",
+  },
+  status: {
+    type: Boolean,
+    default: false,
   },
 });
 
