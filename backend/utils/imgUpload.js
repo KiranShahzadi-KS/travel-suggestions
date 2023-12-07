@@ -1,28 +1,32 @@
-const express = require("express");
+const { fileURLToPath } = require("url");
+const uuid = require("uuid").v4;
 const multer = require("multer");
-const app = express();
-const myEnum = require("./enum");
-const fileFilter = require("./enum");
 const path = require("path");
-const destination = "upload/user";
-const uuid = require("uuid").v4; //use to generate new
+const fs = require("fs");
 
-const diskStorage = multer.diskStorage({
-  destination: destination,
-  filename: (req, file, cb) => {
-    return cb(
-      null,
-      `${uuid()}_${Date.now()}_${path.extname(file.originalname)}`
-    );
-  },
-});
+const myEnum = require("./enum");
 
-const upload = multer({
-  storage: diskStorage,
-  limits: { fileSize: myEnum },
-});
+exports.upload = (folderName) => {
+  let imageCount = 0;
 
-module.exports = { upload };
+  return multer({
+    storage: multer.diskStorage({
+      destination: function (req, file, cb) {
+        const uploadPath = path.join(__dirname, `../uploads/${folderName}/`);
+        fs.mkdirSync(uploadPath, { recursive: true });
+        cb(null, uploadPath);
+      },
+      filename: function (req, file, cb) {
+        cb(null, uuid() + "-" + Date.now() + path.extname(file.originalname));
+      },
+    }),
+    limits: { fileSize: myEnum },
+    fileFilter: function (req, file, cb) {
+      imageCount++;
+      cb(null, true);
+    },
+  });
+};
 
 ///---------
 //Upload with allowing specific file extensions

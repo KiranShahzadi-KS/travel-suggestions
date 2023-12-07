@@ -12,9 +12,11 @@ exports.blockUnblockUser = async (req, res) => {
     user.status = blockStatus;
     await user.save();
 
-    const actionMessage = blockStatus ? "blocked" : "unblocked";
-
-    res.json({ message: `User ${actionMessage} successfully`, user });
+    if (blockStatus === "true") {
+      res.json({ message: `User Blocked successfully`, user });
+    } else {
+      res.json({ message: `User Unblocked successfully`, user });
+    }
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal Server Error!" });

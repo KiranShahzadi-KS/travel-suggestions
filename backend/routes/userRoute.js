@@ -9,8 +9,12 @@ const {
   verifyOTP,
   resetPassword,
 } = require("../controllers/userController");
+const multer = require("multer");
+
 const { authMiddleware } = require("../middleware/authMiddleware");
 const { upload } = require("../utils/imgUpload");
+// const user = multer({ storage: upload("user") }); ///
+
 const { blockUnblockUser } = require("../controllers/adminController");
 const router = express.Router();
 
@@ -19,7 +23,7 @@ router.get("/getAll", authMiddleware, getAllUsers);
 router.post(
   "/updateUser/:_id",
   authMiddleware,
-  upload.single("image"),
+  upload("users").single("image"),
   updateUser
 );
 router.delete("/deleteUser/:userId", authMiddleware, deleteUser);
