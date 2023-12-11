@@ -34,7 +34,7 @@ exports.addPlace = async (req, res) => {
       checkOutTime,
       providedHousekeeping,
     } = req.body;
-
+    console.log(name);
     if (name.toLowerCase() === "hotel type") {
       if (
         !numberOfRooms ||
@@ -43,13 +43,12 @@ exports.addPlace = async (req, res) => {
         !checkOutTime ||
         !providedHousekeeping
       ) {
+        console.log("abc");
         return res
           .status(400)
           .json({ message: "Please enter all fields for hotel type" });
       }
-    }
-
-    if (name.toLowerCase() === "resturant type") {
+    } else if (name.toLowerCase() === "resturant type") {
       if (!restaurantCategory || !cuisines || !mealServed || !openHours) {
         return res
           .status(400)
@@ -75,37 +74,34 @@ exports.addPlace = async (req, res) => {
       propertyDescription,
       certifyingRepresentative,
     };
+    const place = await Place.create(visitingTypeData);
+    console.log(place);
+    if (name === "hotel type") {
+      const hotelTypeData = {
+        placeId: place._id,
+        numberOfRooms,
+        staffDeskAvailability,
+        checkInTime,
+        checkOutTime,
+        providedHousekeeping,
+      };
 
-    const visitingType = await Place.create(visitingTypeData);
-
-    const hotelTypeData = {
-      placeId: visitingType._id,
-      numberOfRooms,
-      staffDeskAvailability,
-      checkInTime,
-      checkOutTime,
-      providedHousekeeping,
-    };
-
-    const hotelType = await HotelTypeModel.create(hotelTypeData);
-    await hotelType.save();
-
-    const resturantType = {
-      placeId: visitingType._id,
-      restaurantCategory,
-      cuisines,
-      mealServed,
-      openHours,
-    };
-    const restType = await RestaurantType.create(resturantType);
-    await restType.save();
-
-    await visitingType.save();
+      const hotelType = await HotelTypeModel.create(hotelTypeData);
+    } else if (name === "resturant type") {
+      const resturantType = {
+        placeId: place._id,
+        restaurantCategory,
+        cuisines,
+        mealServed,
+        openHours,
+      };
+      const restType = await RestaurantType.create(resturantType);
+      await restType.save();
+    }
 
     res.status(200).json({
       success: true,
       message: "Place Created Successfully!",
-      visitingType,
     });
   } catch (error) {
     console.error(error);
@@ -116,7 +112,7 @@ exports.addPlace = async (req, res) => {
   }
 };
 
-//UPDATE PLACE
+// UPDATE PLACE
 exports.updatePlace = async (req, res) => {
   try {
     const {
@@ -149,82 +145,76 @@ exports.updatePlace = async (req, res) => {
 
     const placeId = req.params.id;
 
-    const existingPlace = await Place.findById(placeId);
-
-    if (!existingPlace) {
-      return res.status(404).json({ message: "Place not found" });
-    }
-
-    // UpDaate common fields
-    existingPlace.name = name;
-    existingPlace.description = description;
-    existingPlace.image = image;
-    existingPlace.loc_latitude = loc_latitude;
-    existingPlace.loc_longitude = loc_latitude;
-    existingPlace.state = state;
-    existingPlace.city = city;
-    existingPlace.street = street;
-    existingPlace.postalcode = postalcode;
-    existingPlace.websiteLink = websiteLink;
-    existingPlace.phoneNo = phoneNo;
-    existingPlace.amenities = amenities;
-    existingPlace.role = role;
-    existingPlace.currentlyOpen = currentlyOpen;
-    existingPlace.propertyDescription = propertyDescription;
-    existingPlace.certifyingRepresentative = certifyingRepresentative;
-
-    // Update fields specific to hotel type
+    // Update hotel type data
+    console.log(name);
     if (name.toLowerCase() === "hotel type") {
-      existingPlace.numberOfRooms = numberOfRooms;
-      existingPlace.staffDeskAvailability = staffDeskAvailability;
-      existingPlace.checkInTime = checkInTime;
-      existingPlace.checkOutTime = checkOutTime;
-      existingPlace.providedHousekeeping = providedHousekeeping;
+      console.log("abc");
 
-      // Update hotel type model if it exists
-      const existingHotelType = await HotelTypeModel.findById(
-        existingPlace.hotelTypeId
+      const hotelType = await HotelTypeModel.findOneAndUpdate(
+        placeId,
+        {
+          numberOfRooms,
+          staffDeskAvailability,
+          checkInTime,
+          checkOutTime,
+          providedHousekeeping,
+        },
+        { new: true }
       );
-      if (existingHotelType) {
-        existingHotelType.numberOfRooms = numberOfRooms;
-        existingHotelType.staffDeskAvailability = staffDeskAvailability;
-        existingHotelType.checkInTime = checkInTime;
-        existingHotelType.checkOutTime = checkOutTime;
-        existingHotelType.providedHousekeeping = providedHousekeeping;
-
-        await existingHotelType.save();
-      }
+      return res
+        .status(200)
+        .json({ message: "Updated Hotel Type Data", hotelType });
     }
 
-    // Update fields specific to restaurant type
-    if (name.toLowerCase() === "resturant type") {
-      existingPlace.restaurantCategory = restaurantCategory;
-      existingPlace.cuisines = cuisines;
-      existingPlace.mealServed = mealServed;
-      existingPlace.openHours = openHours;
-
-      // Update restaurant type model if it exists
-      const existingRestaurantType = await RestaurantType.findById(
-        existingPlace.restaurantTypeId
+    // Update visiting data
+    if (name.toLowerCase() === "visiting type") {
+      console.log("abc");
+      const visitingData = await Place.findOneAndUpdate(
+        placeId,
+        {
+          description,
+          image,
+          loc_latitude,
+          loc_longitude,
+          state,
+          city,
+          street,
+          postalcode,
+          websiteLink,
+          phoneNo,
+          amenities,
+          role,
+          currentlyOpen,
+          propertyDescription,
+          certifyingRepresentative,
+        },
+        { new: true }
       );
-      if (existingRestaurantType) {
-        existingRestaurantType.restaurantCategory = restaurantCategory;
-        existingRestaurantType.cuisines = cuisines;
-        existingRestaurantType.mealServed = mealServed;
-        existingRestaurantType.openHours = openHours;
 
-        await existingRestaurantType.save();
-      }
+      return res
+        .status(200)
+        .json({ message: "Updated Visiting Data", visitingData });
     }
 
-    // Save the updated place
-    await existingPlace.save();
+    // Update restaurant
+    if (name.toLowerCase() === "restaurant type") {
+      const restData = await RestaurantType.findOneAndUpdate(
+        placeId,
+        {
+          restaurantCategory,
+          cuisines,
+          mealServed,
+          openHours,
+        },
+        { new: true }
+      );
 
-    res.status(200).json({
-      success: true,
-      message: "Place Updated Successfully!",
-      updatedPlace: existingPlace,
-    });
+      return res
+        .status(200)
+        .json({ message: "Updated Restaurant Data", restData });
+    }
+
+    res.status(400).json({ message: "Invalid place type specified" });
   } catch (error) {
     console.error(error);
     res.status(500).json({
