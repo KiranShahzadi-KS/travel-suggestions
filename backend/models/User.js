@@ -12,7 +12,7 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: true,
+      // required: true,
     },
     confirmPassword: {
       type: String,
@@ -29,6 +29,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ["admin", "user"],
       default: "user",
+    },
+    type: {
+      type: String,
+      enum: ["facebook", "google"],
     },
     status: {
       type: Boolean,
